@@ -74,8 +74,8 @@ refTimeAdjust = 5.46;
 fibTimeAdjust = 11.1;
 
 % Supply guesses for m and k
-fibForceOffset = -fibRobot_voltageMeasured(1,2);
-fibForceScale = 0.1152;
+fibForceOffset = 0.20867;
+fibForceScale = 0.11525;
 
 % Perform minimization
 constsOut = estimateCalibrationConstants([1 -1].*referenceForceData,fibRobot_voltageMeasured,refTimeAdjust,fibTimeAdjust,fibForceOffset,fibForceScale,'2');
@@ -85,10 +85,21 @@ fprintf('           %s \n','Calibration of fibRobot force sensor');
 fprintf('           %s \n','Fitting by function y = k*x + m');
 fprintf('           %s %d %s\n','Resampled signal contains',length(referenceForceData(:,1))-1,'data points');
 fprintf('           %s %3.2f , %3.2f %s\n','Range of force is [',min(referenceForceData(:,2)*-1), max(referenceForceData(:,2)*-1),'] N');
-fprintf('           %s %4.2f \n','Adjustment, k = ',constsOut(2))
-fprintf('           %s %4.2f \n','Adjustment, m = ',constsOut(1))
+fprintf('           %s %4.2f (multiplier) \n','Adjustment, k = ',constsOut(2))
+fprintf('           %s %4.2f (added) \n','Adjustment, m = ',constsOut(1))
 fprintf('           %s %4.2f %s %4.2f \n','Calibrated: fibRobotForce =',fibForceScale*constsOut(2),'* fibRobot_voltageMeasured +',fibForceOffset+constsOut(1))
 fprintf('           %s \n','Inspect fit to confirm quality.');
+
+kExport = fibForceScale*constsOut(2);
+mExport = fibForceOffset+constsOut(1);
+explainerExport = 'To get Force, take Voltage and apply F = kExport*Voltage + mExport';
+
+saveName = flip(strtok(flip(fibRobotForceFile),'\'));
+saveName = strtok(saveName,'.');
+
+save(['calibrationPolynomForForceSensor_data=' saveName '.mat'],'kExport','mExport','explainerExport')
+
+
 % Export all figures
 ctrl.plotFlag = 1;
 if ctrl.plotFlag

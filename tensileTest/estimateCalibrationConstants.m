@@ -2,12 +2,11 @@ function constsOut = estimateCalibrationConstants(refForce,FIBForce,refOffset,FI
 
 
 % Rough cleaning
-refForce(refForce(:,1)<refOffset,:) = [];
-FIBForce(FIBForce(:,1)<FIBOffset,:) = [];
-refForce(:,1) = refForce(:,1)-refOffset;
-FIBForce(:,1) = FIBForce(:,1)-FIBOffset;
-FIBForce(:,2) = FIBForce(:,2)+fibForceOffset;
-FIBForce(:,2) = FIBForce(:,2)*fibForceScaleFactor;
+refForce(refForce(:,1)<refOffset,:) = [];           % Remove signal before time refOffset
+FIBForce(FIBForce(:,1)<FIBOffset,:) = [];           % Remove signal before time FIBOffset
+refForce(:,1) = refForce(:,1)-refOffset;            % Zero the remaining time
+FIBForce(:,1) = FIBForce(:,1)-FIBOffset;            % Zero the remaining time
+FIBForce(:,2) = FIBForce(:,2)*fibForceScaleFactor + fibForceOffset;  % Add offset term and multiply with scale factor
 
 % Resample one of them for error minimization
 FIBForceRES = interp1(FIBForce(:,1),FIBForce(:,2),refForce(:,1));
@@ -28,4 +27,4 @@ plot(refForce(2:end,1),y1.*constsOut(2)+constsOut(1),'linewidth',1)
 xlabel('Time (adjusted) [s]')
 ylabel('Force signal [N]')
 legend('Ref.','FibRobot','location','best')
-title(['OFFSET = ' num2str(fibForceOffset+constsOut(1)) '     SCALE = ' num2str(fibForceScaleFactor+constsOut(2))])
+title(['OFFSET = ' num2str(fibForceOffset+constsOut(1)) '     SCALE = ' num2str(fibForceScaleFactor*constsOut(2))])
